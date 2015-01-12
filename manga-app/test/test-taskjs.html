@@ -1,0 +1,17 @@
+<html>
+<body>
+<script type="application/javascript" src="../lib/task.js"></script>
+Ahh
+<!-- 'yield' and 'let' keywords require version opt-in -->
+<script type="application/javascript">
+function hello() {
+    task.spawn(function*() {      // Firefox does not yet use the function* syntax
+        alert("Hello...");
+        yield task.sleep(1000);
+        alert("...world!");
+    });
+}
+hello();
+</script>
+</body>
+</html>

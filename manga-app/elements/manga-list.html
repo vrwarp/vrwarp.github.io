@@ -1,0 +1,186 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
+<link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="../bower_components/core-a11y-keys/core-a11y-keys.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="gdrive-data.html">
+<link rel="import" href="manga-list-data.html">
+<link rel="import" href="manga-list-item.html">
+
+<polymer-element name="manga-list" attributes="searchFilter">
+  <template>
+		<style>
+			.card {
+					height: 450px;
+					width: 300px;
+					margin: 0;
+					border-radius: 2px;
+			}
+			
+			.mangaTitle {
+					padding: 16px;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+			}
+			
+			core-toolbar {
+					background-color: #4CAF50;
+					color: #FFF;
+			}
+			
+			core-list {
+					background-color: #EEE;
+			}
+			
+			#searchInput /deep/ ::-webkit-input-placeholder {
+					color: #C8E6C9;
+			}
+			
+			#searchInput /deep/ ::-moz-placeholder {
+					color: #C8E6C9;
+			}
+			
+			#searchInput /deep/ :-ms-input-placeholder {
+					color: #C8E6C9;
+			}
+			
+			#searchInput /deep/ .unfocused-underline {
+					background-color: #B6B6B6;
+			}
+			
+			#searchInput /deep/ .focused-underline {
+					background-color: #C8E6C9;
+			}
+		</style>
+
+		<gdrive-data
+			 id="appData"
+			 loggedIn="{{loggedIn}}"
+			 profileImage="{{profileImage}}"></gdrive-data>
+		
+		<manga-list-data
+			 on-manga-list-loaded="{{mangaListLoaded}}"></manga-list-data>
+
+		<core-header-panel mode="seamed" fit>
+			<core-toolbar class="core-narrow">
+				<core-animated-pages
+					 id="toolbarPages"
+					 transitions="hero-transition cross-fade"
+					 flex>
+					<section horizontal layout center>
+						<div class="bottom indent" cross-fade>Manga App</div>
+						<div flex></div>
+						<paper-icon-button
+							 hero
+							 hero-id="search"
+							 icon="search"
+							 on-click="{{activateSearch}}"></paper-icon-button>
+					</section>
+					<section horizontal layout center>
+						<paper-icon-button
+							 hero
+							 hero-id="search"
+							 icon="search"
+							 on-click="{{deactivateSearch}}"></paper-icon-button>
+						<paper-input
+							 cross-fade
+							 id="searchInput"
+							 label="Manga"
+							 committedValue="{{searchFilter}}"
+							 flex>
+							<core-a11y-keys keys="esc" on-keys-pressed="{{deactivateSearch}}"></core-a11y-keys>
+						</paper-input>
+					</section>
+				</core-animated-pages>
+
+				<template if="{{loggedIn}}">
+					<div style="width:40px;height:40px;border-radius:20px;background: url({{profileImage}}) no-repeat;"></div>
+				</template>
+				<template if="{{!loggedIn}}">
+					<paper-icon-button
+						 icon="account-circle"
+						 on-click="{{authenticate}}"></paper-icon-button>
+				</template>
+			</core-toolbar>
+
+			<core-list
+				 fit
+				 id="list"
+				 style="min-height:10px"
+				 height="450"
+				 width="300"
+				 grid
+				 on-core-activate="{{selectManga}}">
+				<template>
+					<manga-list-item class="card" manga="{{model}}"></manga-list-item>
+				</template>
+			</core-list>
+		</core-header-panel>
+  </template>
+	<script>
+		(function() {
+				var mangaList_ = [];
+				Polymer({
+						domReady: function() {
+								if (this.searchFilter) {
+										this.$.searchInput.value = this.searchFilter;
+										this.$.toolbarPages.selected = 1;
+										this.searchFilterChanged("", this.searchFilter);
+								}
+								this.$.list.data = mangaList_;
+						},
+						selectManga: function (event, detail, sender) {
+								document.querySelector("app-router").go("/manga/" + escape(detail.data.id));
+						},
+						activateSearch: function (event, detail, sender) {
+								this.$.searchInput.value = "";
+								this.$.searchInput.committedValue = "";
+								this.$.toolbarPages.selected = 1;
+								
+								var searchInput = this.$.searchInput;
+								window.setTimeout(function() {
+										searchInput.$.decorator.input.focus();
+								}, 0);
+						},
+						deactivateSearch: function (event, detail, sender) {
+								this.$.searchInput.value = "";
+								this.$.searchInput.committedValue = "";
+								this.$.toolbarPages.selected = 0;
+								window.history.replaceState(null, null, "#/");
+						},
+						applyFilter: function (manga) {
+								var filterString = this.$.searchInput.value;
+								if (filterString == "") {
+										return true;
+								}
+								var filter = new RegExp(filterString, "i");
+								return filter.test(manga.title);
+						},
+						searchFilterChanged: function (oldValue, newValue) {
+								if (!this.$.list || !this.$.list.data) {
+										return;
+								}
+								if (this.$.list.data.length) {
+										this.$.list.scrollToItem(0);
+								}
+								
+								this.$.list.data = mangaList_.filter(
+										this.applyFilter, this);
+								if (newValue) {
+										window.history.replaceState(null, null, "#/search/" + escape(newValue));
+								}
+						},
+						mangaListLoaded: function (event, detail, sender) {
+								mangaList_ = detail;
+								this.searchFilterChanged("", this.$.searchInput.value);
+						},
+						authenticate: function() {
+								this.$.appData.authenticate();
+						},
+				});
+		})();
+	</script>
+</polymer-element>
