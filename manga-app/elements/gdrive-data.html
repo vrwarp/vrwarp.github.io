@@ -41,11 +41,16 @@
 
 				var initialized_ = false;
 				var model_ = null;
-				var starredList_ = null;
-				var readMap_ = null;
+				var mangaMap_ = null;
 				var authenticated_ = false;
 				var profileName_ = null;
 				var profileImage_ = null;
+
+				// Constants for the maps.
+				var MANGA = "manga";
+				var LATEST_READ = "latestRead";
+				var STARRED = "starred";
+				var VERSION = "version";
 				
 				var CLIENT_ID = '423468108258-2i6sdlvnc644qd0nkphhiae2trvaeusb.apps.googleusercontent.com';
 				var SCOPES = [
@@ -117,16 +122,57 @@
 
 				var initializeModel_ = function(model) {
 						var root = model.getRoot();
-						root.set("starred", model.createList());
-						root.set("read", model.createMap());
-						root.set("version", 1);
+						root.set(MANGA, model.createMap());
+						root.set(VERSION, 2);
+				}
+
+				var updateModel_ = function(model) {
+						var root = model.getRoot();
+						if (root.get(VERSION) == 1) {
+								var V1_STARRED = "starred";
+								var V1_READ = "read";
+
+								model.beginCompoundOperation("v1to2", false);
+								var starredList = root.get(V1_STARRED).asArray();
+								var readPairList = root.get(V1_READ).items();
+
+								var mangaMap = model.createMap();
+								starredList.forEach(function(value) {
+										if (!mangaMap.has(value)) {
+												mangaMap.set(value, model.createMap());
+										}
+										mangaMap.get(value).set(STARRED, true);
+								});
+
+								readPairList.forEach(function(pair) {
+										var key = pair[0];
+										var value = pair[1];
+										if (!mangaMap.has(key)) {
+												mangaMap.set(key, model.createMap());
+										}
+										mangaMap.get(key).set(LATEST_READ, value);
+								});
+
+								root.set(MANGA, mangaMap);
+								root.set(VERSION, 2);
+								root.delete(V1_STARRED);
+								root.delete(V1_READ);
+								model.endCompoundOperation();
+								console.log("Updated model from v1 to v2");
+
+								updateModel_(model);
+								return;
+						}
 				}
 
 				var modelLoaded_ = function(doc) {
 						model_ = doc.getModel();
+						updateModel_(model_);
+
 						var root = model_.getRoot();
-						starredList_ = root.get("starred");
-						readMap_ = root.get("read");
+						mangaMap_ = root.get(MANGA);
+
+						// TODO: watch version for changes.
 						initialized_ = true;
 						updateModelReady_();
 				}
@@ -188,20 +234,21 @@
 										return false;
 								}
 
-								return starredList_.indexOf(mangaId) != -1;
+								if (!mangaMap_.has(mangaId)) {
+										return false;
+								}
+								var manga = mangaMap_.get(mangaId);
+								return manga.has(STARRED) && manga.get(STARRED);
 						},
 						setMangaStarred: function (mangaId, starred) {
 								if (!initialized_) {
 										return false;
 								}
 
-								if (!starred) {
-										model_.beginCompoundOperation("Remove " + mangaId);
-										while (starredList_.removeValue(mangaId)) {}
-										model_.endCompoundOperation();
-								} else if (starredList_.indexOf(mangaId) == -1) {
-										starredList_.push(mangaId);
+								if (!mangaMap_.has(mangaId)) {
+										mangaMap_.set(mangaId, model_.createMap());
 								}
+								mangaMap_.get(mangaId).set(STARRED, starred);
 								return true;
 						},
 						getStarredManga: function() {
@@ -209,25 +256,45 @@
 										return new Set();
 								}
 
-								return new Set(starredList_.asArray());
+								var starredSet = new Set();
+								mangaMap_.items().forEach(function(pair) {
+										var id = pair[0];
+										var manga = pair[1];
+										if (manga.has(STARRED) && manga.get(STARRED)) {
+												starredSet.add(id);
+										}
+								});
+								return starredSet;
 						},
 						setLatestReadChapterDate: function (mangaId, chapterDate) {
 								if (!initialized_ || this.getLatestReadChapterDate(mangaId) > chapterDate) {
 										return;
 								}
-								readMap_.set(mangaId, chapterDate);
+								if (!mangaMap_.has(mangaId)) {
+										mangaMap_.set(mangaId, model_.createMap());
+								}
+								mangaMap_.get(mangaId).set(LATEST_READ, chapterDate);
 						},
 						getLatestReadChapterDate: function (mangaId) {
-								if (!initialized_ || !readMap_.has(mangaId)) {
+								if (!initialized_ || !mangaMap_.has(mangaId)) {
 										return 0;
 								}
-								return readMap_.get(mangaId);
+								var manga = mangaMap.get(mangaId);
+								return manga.has(LATEST_READ) ? manga.get(LATEST_READ) : 0;
 						},
 						getLatestReadChapterDateMap: function() {
+								var readMap = new Map();
 								if (!initialized_) {
-										return new Map();
+										return readMap;
 								}
-								return new Map(readMap_.items());
+								mangaMap_.items().forEach(function (pair) {
+										var id = pair[0];
+										var manga = pair[1];
+										if (manga.has(LATEST_READ)) {
+												readMap.set(id, manga.get(LATEST_READ));
+										}
+								});
+								return readMap;
 						},
 						authenticate: function() {
 								// Authenticate with a pop-up.

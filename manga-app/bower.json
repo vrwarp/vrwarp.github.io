@@ -35,6 +35,7 @@
     "core-icon": "Polymer/core-icon#~0.5.2",
     "core-toolbar": "Polymer/core-toolbar#~0.5.2",
     "core-pages": "Polymer/core-pages#~0.5.2",
-    "core-list": "Polymer/core-list#~0.5.2"
+    "core-list": "Polymer/core-list#~0.5.2",
+    "paper-fab": "Polymer/paper-fab#~0.5.2"
   }
 }
