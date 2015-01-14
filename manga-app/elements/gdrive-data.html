@@ -47,10 +47,13 @@
 				var profileImage_ = null;
 
 				// Constants for the maps.
+				var VERSION = "version";
 				var MANGA = "manga";
 				var LATEST_READ = "latestRead";
 				var STARRED = "starred";
-				var VERSION = "version";
+				var CHAPTER = "chapter";
+				var CHAPTER_READ = "read";
+				var CHAPTER_PAGE = "page";
 				
 				var CLIENT_ID = '423468108258-2i6sdlvnc644qd0nkphhiae2trvaeusb.apps.googleusercontent.com';
 				var SCOPES = [
@@ -285,7 +288,7 @@
 								if (!initialized_ || !mangaMap_.has(mangaId)) {
 										return 0;
 								}
-								var manga = mangaMap.get(mangaId);
+								var manga = mangaMap_.get(mangaId);
 								return manga.has(LATEST_READ) ? manga.get(LATEST_READ) : 0;
 						},
 						getLatestReadChapterDateMap: function() {
@@ -301,6 +304,50 @@
 										}
 								});
 								return readMap;
+						},
+						markChapterRead: function (mangaId, chapterId) {
+								if (!initialized_) {
+										return;
+								}
+
+								if (!mangaMap_.has(mangaId)) {
+										mangaMap_.set(mangaId, model_.createMap());
+								}
+								var manga = mangaMap_.get(mangaId);
+
+								if (!manga.has(CHAPTER)) {
+										manga.set(CHAPTER, model_.createMap());
+								}
+								var chapters = manga.get(CHAPTER);
+
+								if (!chapters.has(chapterId)) {
+										chapters.set(chapterId, model_.createMap());
+								}
+								chapters.get(chapterId).set(CHAPTER_READ, true);
+						},
+						getReadChapters: function (mangaId) {
+								var readChapterSet = new Set();
+								if (!initialized_) {
+										return readChapterSet;
+								}
+
+								if (!mangaMap_.has(mangaId)) {
+										return readChapterSet;
+								}
+								var manga = mangaMap_.get(mangaId);
+
+								if (!manga.has(CHAPTER)) {
+										return readChapterSet;
+								}
+								manga.get(CHAPTER).items().forEach(function (pair) {
+										var id = pair[0];
+										var chapter = pair[1];
+										if (chapter.has(CHAPTER_READ) && chapter.get(CHAPTER_READ)) {
+												readChapterSet.add(id);
+										}
+								});
+
+								return readChapterSet;
 						},
 						authenticate: function() {
 								// Authenticate with a pop-up.

@@ -230,7 +230,7 @@
 
 						this.chapter = detail[index];
 						if (this.driveModelReady) {
-								this.setLatestReadChapterDate_();
+								this.markChapterRead_();
 						}
 
 						// Setup next button.
@@ -245,10 +245,11 @@
 						if (!newvalue || !this.chapter.id) {
 								return;
 						}
-						this.setLatestReadChapterDate_();
+						this.markChapterRead_();
 				},
-				setLatestReadChapterDate_: function() {
+				markChapterRead_: function() {
 						this.$.driveData.setLatestReadChapterDate(this.mangaId, this.chapter.date);
+						this.$.driveData.markChapterRead(this.mangaId, this.chapterId);
 				},
 				addNextChapterButton_: function() {
 						if (!this.nextChapterId || this.$.list.data.length == 0) {

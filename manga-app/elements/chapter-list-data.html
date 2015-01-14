@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 <link rel="import" href="gdrive-data.html">
 
-<polymer-element name="chapter-list-data" attributes="mangaId starred latestReadDate">
+<polymer-element name="chapter-list-data" attributes="mangaId starred latestReadDate chaptersRead">
   <template>
 		<gdrive-data
 			 id="driveData"
@@ -29,7 +29,7 @@
 						latestReadDate: (new Date()).getTime() / 1000.0,
 						ready: function() {
 								this.updateStarred_();
-								this.updateLatestReadDate_();
+								this.updateReadDate_();
 						},
 						domReady: function() {
 								if (mangaId_ == this.mangaId && initialized_) {
@@ -47,7 +47,7 @@
 										this.$.ajax.go();
 								} else {
 										this.updateStarred_();
-										this.updateLatestReadDate_();
+										this.updateReadDate_();
 								}
 						},
 						convertToExpectedModel: function (model) {
@@ -63,7 +63,7 @@
 								chapterList_ = detail.response.chapters.map(this.convertToExpectedModel);
 								initialized_ = true;
 								this.updateStarred_();
-								this.updateLatestReadDate_();
+								this.updateReadDate_();
 								this.chapterListLoaded_();
 						},
 						chapterListLoaded_: function() {
@@ -71,13 +71,14 @@
 						},
 						driveModelReadyChanged: function (oldvalue, newvalue) {
 								this.updateStarred_();
-								this.updateLatestReadDate_();
+								this.updateReadDate_();
 						},
-						updateLatestReadDate_: function () {
+						updateReadDate_: function () {
 								if (!mangaId_ || !this.driveModelReady) {
 										return;
 								}
 								this.latestReadDate = this.$.driveData.getLatestReadChapterDate(mangaId_);
+								this.chaptersRead = this.$.driveData.getReadChapters(mangaId_);
 						},
 						updateStarred_: function() {
 								if (!mangaId_ || !this.driveModelReady) {

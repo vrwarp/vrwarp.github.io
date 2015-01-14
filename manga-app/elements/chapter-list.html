@@ -59,7 +59,7 @@
 			 id="chapterListData"
 			 mangaId="{{mangaId}}"
 			 starred="{{starred}}"
-			 latestReadDate="{{latestReadDate}}"
+			 chaptersRead="{{chaptersRead}}"
 			 on-chapter-list-loaded="{{chapterListLoaded}}"></chapter-list-data>
 
 		<core-header-panel mode="seamed" fit>
@@ -91,7 +91,7 @@
 									<div class="chapterNumber">Chapter {{model.number}}</div>
 								</div>
 								<div flex></div>
-								<template if="{{model.date > latestReadDate}}">
+								<template if="{{!isChapterRead(model.id, chaptersRead)}}">
 									<core-icon icon="av:new-releases"></core-icon>
 								</template>
 							</div>
@@ -106,6 +106,9 @@
 	<script>
 		(function() {
 				Polymer({
+						manga: {
+								title: "Loading...",
+						},
 						selectChapter: function (event, detail, sender) {
 								document.querySelector("app-router").go(
 										"/manga/" + [this.mangaId, detail.data.id].map(escape).join("/"));
@@ -122,15 +125,18 @@
 						toggleStarred: function() {
 								this.$.chapterListData.toggleStarred();
 						},
-						manga: {
-								title: "Loading...",
-						},
 						mangaListLoaded: function (event, detail, sender) {
 								for (var i = 0; i < detail.length; i++) {
 										if (detail[i].id == this.mangaId) {
 												this.manga = detail[i];
 										}
 								}
+						},
+						isChapterRead: function (chapterId, chaptersRead) {
+								if (!chapterId || !chaptersRead) {
+										return true;
+								}
+								return chaptersRead.has(chapterId);
 						},
 				});
 		})();
