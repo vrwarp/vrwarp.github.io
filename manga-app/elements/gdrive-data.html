@@ -170,6 +170,12 @@
 						updateModel_(model_);
 
 						var root = model_.getRoot();
+
+						if (root.get(VERSION) != 2) {
+								console.error("Model version " + root.get(VERSION) + " is not supported!");
+								return;
+						}
+
 						mangaMap_ = root.get(MANGA);
 
 						// TODO: watch version for changes.
