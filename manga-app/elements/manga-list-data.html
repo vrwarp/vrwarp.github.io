@@ -17,6 +17,7 @@
 				var manga_ = {};
 				var starredManga_ = new Set();
 				var latestReadDateMap_ = new Map();
+				var CACHE_VERSION = 1;
 
 				var nextInstanceId_ = 0;
 				var instanceKeys_ = [];
@@ -108,6 +109,7 @@
 								if (model.id in manga_) {
 										var original = manga_[model.id];
 										var updated = false;
+										// Maybe update all the fields of model.
 										for (key in model) {
 												if (original[key] != model[key]) {
 														original[key] = model[key];
@@ -122,6 +124,10 @@
 										notifyInstances_("new-manga", model);
 								}
 						});
+
+						// Cache the updated value.
+						localforage.setItem("manga", manga_);
+						localforage.setItem("version", CACHE_VERSION);
 				}
 
 				var refreshManga_ = function() {
@@ -131,30 +137,18 @@
 								});
 				}
 
-				// initial refresh.
-				refreshManga_().then(function () {
-						localforage.setItem("manga", manga_);
-
-						initialized_ = true;
-						for (var i = 0; i < instanceKeys_.length; i++) {
-								var key = instanceKeys_[i];
-								if (instanceMap_.has(key)) {
-										var instance = instanceMap_.get(key);
-										instance.loading = false;
-										instance.mangaListLoaded_();
+				var initialRefresh = refreshManga_();
+				var fetchFromCache = Promise.all([
+						localforage.getItem("version"),
+						localforage.getItem("manga")]).then(function(values) {
+								if (values[0] != CACHE_VERSION || !values[1]) {
+										return;
 								}
-						}
-				});
-
-				// load cached data.
-				localforage.getItem("manga").then(function(value) {
-						if (!value || initialized_) {
-								return;
-						}
-
-						manga_ = value;
-						console.log("Loaded manga from cache.");
-
+								
+								console.log("Loaded manga from cache.");
+								manga_ = values[1];
+						});
+				Promise.race([initialRefresh, fetchFromCache]).then(function () {
 						initialized_ = true;
 						for (var i = 0; i < instanceKeys_.length; i++) {
 								var key = instanceKeys_[i];

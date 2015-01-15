@@ -58,10 +58,15 @@
 						this.fire("page-crossed", {direction: direction, page: this.page});
 				},
 				pageChanged: function() {
-						if (this.waypoint) {
-								this.waypoint.disable();
-								this.waypoint.context.refresh();
-								window.requestAnimationFrame(this.waypoint.enable.bind(this.waypoint));
+						var waypoint = this.waypoint;
+						if (waypoint) {
+								waypoint.disable();
+								window.requestAnimationFrame(function() {
+										waypoint.context.refresh();
+										window.requestAnimationFrame(function() {
+												waypoint.enable();
+										});
+								});
 						}
 				},
 		});
@@ -152,7 +157,7 @@
 				 id="list"
 				 fit
 				 style="min-height:10px"
-				 height="{{medianImageHeight * ((listWidth > medianImageWidth ? medianImageWidth : listWidth) / medianImageWidth)}}">
+				 height="{{minImageHeight * ((listWidth > medianImageWidth ? medianImageWidth : listWidth) / medianImageWidth)}}">
 				<template>
 					<div class="page" >
 						<template if="{{model.image}}">
@@ -183,14 +188,14 @@
 		Polymer({
 				page: 0,
 				fullscreen: false,
+				medianImageWidth: 250,
+				medianImageHeight: 1000,
+				minImageHeight: 1000,
+				listWidth: 360,
 				ready: function() {
 						if (this.chapterId) {
 								this.chapterIdChanged("", this.chapterId);
 						}
-						
-						this.medianImageWidth = 256; // Some "reasonable" default.
-						this.medianImageHeight = 1024; // Some "reasonable" default.
-						this.listWidth = 360; // Some "reasonable" default.
 				},
 				domReady: function() {
 						this.listWidth = Math.max(360, this.$.list.clientWidth);
@@ -199,6 +204,8 @@
 						window.addResizeListener(this.$.list, function() {
 								self.listWidth = Math.max(1, self.$.list.clientWidth);
 						});
+
+						this.$.list.addEventListener("scroll", this.resetEndOFScrollTimer.bind(this));
 				},
 				chapterIdChanged: function (oldValue, newValue) {
 						console.log(newValue);
@@ -241,6 +248,10 @@
 						images.sort(this.ascendingImageHeight);
 						this.medianImageHeight = Math.max(1024, images[Math.floor(images.length/2)].image.height);
 						console.log("Median height updated to " + this.medianImageHeight);
+
+						this.minImageHeight = Math.max(200, images.reduce(
+								function (prev, curr) { return Math.min(prev, curr.image.height); }, images[0].image.height));
+						console.log("Min height updated to " + this.minImageHeight);
 						
 						images.sort(this.ascendingImageData);
 						
@@ -321,13 +332,31 @@
 						this.fullscreen = !this.fullscreen;
 				},
 				handlePageCrossed: function (event, detail, sender) {
-						console.log("Page " + detail.page +" crossed! Direction: " + detail.direction);
+						//console.log("Page " + detail.page +" crossed! Direction: " + detail.direction);
 
 						if (detail.direction == "down") {
 								this.page = detail.page + 1;
 						} else {
 								this.page = detail.page;
 						}
+				},
+				lastScrollTime: 0,
+				endOfScrollCheck: null,
+				resetEndOFScrollTimer: function() {
+						this.lastScrollTime = (new Date()).getTime();
+
+						if (!this.endOfScrollCheck) {
+								this.endOfScrollCheck = setInterval(this.endOfScroll.bind(this), 500);
+						}
+				},
+				endOfScroll: function() {
+						if ((new Date()).getTime() - this.lastScrollTime < 500) {
+								return;
+						}
+
+						clearInterval(this.endOfScrollCheck);
+						this.endOfScrollCheck = null;
+
 						window.history.replaceState(
 								null, null, "#/manga/" +
 										[this.mangaId, this.chapterId, this.page].map(escape).join("/"));
