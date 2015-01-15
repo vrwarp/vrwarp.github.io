@@ -14,353 +14,353 @@
 
 <polymer-element name="chapter-page" attributes="imageUrl page context">
   <template>
-		<style>
-			:host {
-					display: block;
-			}
+    <style>
+      :host {
+          display: block;
+      }
 
-			core-image {
-					display: block;
-					background-color: #FFF;
-					width: 100%;
-					height: 100%;
-			}
-		</style>
-		<core-image 
-			 id="image"
-			 src="{{imageUrl}}"
-			 sizing="contain"
-			 fade
-			 preload
-			 loading="{{imageLoading}}"></core-image>
-		<div fit horizontal center-justified layout center>
-			<paper-spinner active?="{{imageLoading}}"></paper-spinner>
-		</div>
-	</template>
-	<script>
-		Polymer({
-				attachedCallback: function() {
-						console.log("Attached");
-						this.waypoint = new Waypoint({
-								element: this.$.image,
-								context: this.context,
-								enabled: false,
-								continuous: false,
-								handler: this.crossWaypoint.bind(this),
-						});
-						this.waypoint.enable();
-				},
-				detachedCallback: function() {
-						console.log("Detatched");
-						this.waypoint.destroy();
-				},
-				crossWaypoint: function(direction) {
-						this.fire("page-crossed", {direction: direction, page: this.page});
-				},
-				pageChanged: function() {
-						var waypoint = this.waypoint;
-						if (waypoint) {
-								waypoint.disable();
-								window.requestAnimationFrame(function() {
-										waypoint.context.refresh();
-										window.requestAnimationFrame(function() {
-												waypoint.enable();
-										});
-								});
-						}
-				},
-		});
-	</script>
+      core-image {
+          display: block;
+          background-color: #FFF;
+          width: 100%;
+          height: 100%;
+      }
+    </style>
+    <core-image 
+       id="image"
+       src="{{imageUrl}}"
+       sizing="contain"
+       fade
+       preload
+       loading="{{imageLoading}}"></core-image>
+    <div fit horizontal center-justified layout center>
+      <paper-spinner active?="{{imageLoading}}"></paper-spinner>
+    </div>
+  </template>
+  <script>
+    Polymer({
+        attachedCallback: function() {
+            console.log("Attached");
+            this.waypoint = new Waypoint({
+                element: this.$.image,
+                context: this.context,
+                enabled: false,
+                continuous: false,
+                handler: this.crossWaypoint.bind(this),
+            });
+            this.waypoint.enable();
+        },
+        detachedCallback: function() {
+            console.log("Detatched");
+            this.waypoint.destroy();
+        },
+        crossWaypoint: function(direction) {
+            this.fire("page-crossed", {direction: direction, page: this.page});
+        },
+        pageChanged: function() {
+            var waypoint = this.waypoint;
+            if (waypoint) {
+                waypoint.disable();
+                window.requestAnimationFrame(function() {
+                    waypoint.context.refresh();
+                    window.requestAnimationFrame(function() {
+                        waypoint.enable();
+                    });
+                });
+            }
+        },
+    });
+  </script>
 </ploymer-element>
 
 <polymer-element name="chapter-view" attributes="mangaId chapterId page fullscreen">
   <template>
-		<style>
-			.page #nextChapter div {
-					margin: 8px 8px;
-			}
+    <style>
+      .page #nextChapter div {
+          margin: 8px 8px;
+      }
 
-			.page #nextChapter paper-button {
-					margin: 0 auto;
-					width: {{medianImageWidth}}px;
-					max-width: 100%;
-					display: block;
-					padding: 8px;
-					text-align: center;
-			}
-			
-			.page {
-					width: 100%;
-			}
-			
-			core-toolbar {
-					background-color: #4CAF50;
-					color: #FFF;
-			}
+      .page #nextChapter paper-button {
+          margin: 0 auto;
+          width: {{medianImageWidth}}px;
+          max-width: 100%;
+          display: block;
+          padding: 8px;
+          text-align: center;
+      }
+      
+      .page {
+          width: 100%;
+      }
+      
+      core-toolbar {
+          background-color: #4CAF50;
+          color: #FFF;
+      }
 
-			core-list {
-					background-color: #EEE;
-			}
+      core-list {
+          background-color: #EEE;
+      }
 
-			core-toolbar.fullscreenMode {
-					display: none;
-			}
+      core-toolbar.fullscreenMode {
+          display: none;
+      }
 
-			#fullscreenControls {
-					display: none;
-			}
+      #fullscreenControls {
+          display: none;
+      }
 
-			#fullscreenControls.fullscreenMode {
-					display: flex;
-					width: 56px;
-					height: 56px;
-					margin-right: 0;
-					margin-top: 0;
-					margin-left: auto;
-			}
+      #fullscreenControls.fullscreenMode {
+          display: flex;
+          width: 56px;
+          height: 56px;
+          margin-right: 0;
+          margin-top: 0;
+          margin-left: auto;
+      }
 
-			#fullscreenControls paper-fab {
-					background-color: #4CAF50;
-			}
-		</style>
-		
-		<gdrive-data
-			 id="driveData"
-			 modelReady="{{driveModelReady}}"></gdrive-data>
+      #fullscreenControls paper-fab {
+          background-color: #4CAF50;
+      }
+    </style>
+    
+    <gdrive-data
+       id="driveData"
+       modelReady="{{driveModelReady}}"></gdrive-data>
 
-		<chapter-list-data
-			 id="chapterListData"
-			 mangaId="{{mangaId}}"
-			 on-chapter-list-loaded="{{chapterListLoaded}}"></chapter-list-data>
+    <chapter-list-data
+       id="chapterListData"
+       mangaId="{{mangaId}}"
+       on-chapter-list-loaded="{{chapterListLoaded}}"></chapter-list-data>
 
-		<core-ajax
-			 id="ajax"
-			 handleAs="json"
-			 on-core-response="{{handleResponse}}"></core-ajax>
+    <core-ajax
+       id="ajax"
+       handleAs="json"
+       on-core-response="{{handleResponse}}"></core-ajax>
 
-		<core-header-panel fit>
-			<core-toolbar class="core-narrow {{ {fullscreenMode: fullscreen} | tokenList}}">
+    <core-header-panel fit>
+      <core-toolbar class="core-narrow {{ {fullscreenMode: fullscreen} | tokenList}}">
         <paper-icon-button icon="arrow-back" on-click="{{backClicked}}"></paper-icon-button>
-				<div title="Chapter {{chapter.number}}: {{chapter.title}}" style="overflow: hidden; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-					<template if="{{listWidth < 640}}">
-						{{chapter.title}}
-					</template>
-					<template if="{{listWidth >= 640}}">
-						Chapter {{chapter.number}}: {{chapter.title}}
-					</template>
-				</div>
-				<div flex></div>
-				<paper-icon-button icon="fullscreen" on-click="{{toggleFullscreen}}"></paper-icon-button>
-			</core-toolbar>
+        <div title="Chapter {{chapter.number}}: {{chapter.title}}" style="overflow: hidden; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          <template if="{{listWidth < 640}}">
+            {{chapter.title}}
+          </template>
+          <template if="{{listWidth >= 640}}">
+            Chapter {{chapter.number}}: {{chapter.title}}
+          </template>
+        </div>
+        <div flex></div>
+        <paper-icon-button icon="fullscreen" on-click="{{toggleFullscreen}}"></paper-icon-button>
+      </core-toolbar>
 
-			<core-list
-				 id="list"
-				 fit
-				 style="min-height:10px"
-				 height="{{minImageHeight * ((listWidth > medianImageWidth ? medianImageWidth : listWidth) / medianImageWidth)}}">
-				<template>
-					<div class="page" >
-						<template if="{{model.image}}">
-							<chapter-page imageUrl="{{model.image.url}}" page="{{index}}" context="{{$.list}}"
-														on-page-crossed="{{handlePageCrossed}}"
-														style="width:{{listWidth > model.image.width ? model.image.width : listWidth}}px;
-																	 height:{{model.image.height * ((listWidth > model.image.width ? model.image.width : listWidth) / model.image.width)}}px;
-																	 margin: 0 auto;"></chapter-page>
-						</template>
-						<template if="{{model.nextChapterButton}}">
-							<div id="nextChapter">
-								<paper-button
-									 raised
-									 on-click="{{nextChapter}}">Next Chapter: {{nextChapterTitle}}</paper-button>
-							</div>
-						</template>
-					</div>
-				</template>
-			</core-list>
+      <core-list
+         id="list"
+         fit
+         style="min-height:10px"
+         height="{{minImageHeight * ((listWidth > medianImageWidth ? medianImageWidth : listWidth) / medianImageWidth)}}">
+        <template>
+          <div class="page" >
+            <template if="{{model.image}}">
+              <chapter-page imageUrl="{{model.image.url}}" page="{{index}}" context="{{$.list}}"
+                            on-page-crossed="{{handlePageCrossed}}"
+                            style="width:{{listWidth > model.image.width ? model.image.width : listWidth}}px;
+                                   height:{{model.image.height * ((listWidth > model.image.width ? model.image.width : listWidth) / model.image.width)}}px;
+                                   margin: 0 auto;"></chapter-page>
+            </template>
+            <template if="{{model.nextChapterButton}}">
+              <div id="nextChapter">
+                <paper-button
+                   raised
+                   on-click="{{nextChapter}}">Next Chapter: {{nextChapterTitle}}</paper-button>
+              </div>
+            </template>
+          </div>
+        </template>
+      </core-list>
 
-			<div id="fullscreenControls" horizontal center-justified layout center
-					 class="{{ {fullscreenMode: fullscreen} | tokenList}}">
-				<paper-fab icon="fullscreen-exit" mini on-click="{{toggleFullscreen}}"></paper-fab>
-			</div>
-		</core-header-panel>
+      <div id="fullscreenControls" horizontal center-justified layout center
+           class="{{ {fullscreenMode: fullscreen} | tokenList}}">
+        <paper-fab icon="fullscreen-exit" mini on-click="{{toggleFullscreen}}"></paper-fab>
+      </div>
+    </core-header-panel>
   </template>
-	<script>
-		Polymer({
-				page: 0,
-				fullscreen: false,
-				medianImageWidth: 250,
-				medianImageHeight: 1000,
-				minImageHeight: 1000,
-				listWidth: 360,
-				ready: function() {
-						if (this.chapterId) {
-								this.chapterIdChanged("", this.chapterId);
-						}
-				},
-				domReady: function() {
-						this.listWidth = Math.max(360, this.$.list.clientWidth);
-						
-						var self = this;
-						window.addResizeListener(this.$.list, function() {
-								self.listWidth = Math.max(1, self.$.list.clientWidth);
-						});
+  <script>
+    Polymer({
+        page: 0,
+        fullscreen: false,
+        medianImageWidth: 250,
+        medianImageHeight: 1000,
+        minImageHeight: 1000,
+        listWidth: 360,
+        ready: function() {
+            if (this.chapterId) {
+                this.chapterIdChanged("", this.chapterId);
+            }
+        },
+        domReady: function() {
+            this.listWidth = Math.max(360, this.$.list.clientWidth);
+            
+            var self = this;
+            window.addResizeListener(this.$.list, function() {
+                self.listWidth = Math.max(1, self.$.list.clientWidth);
+            });
 
-						this.$.list.addEventListener("scroll", this.resetEndOFScrollTimer.bind(this));
-				},
-				chapterIdChanged: function (oldValue, newValue) {
-						console.log(newValue);
-						this.$.list.data = [];
-						this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/chapter/" + newValue + "/";
-						this.$.ajax.go();
-				},
-				ascendingImageData: function (a, b) {
-						return a.image ? a.image.page - b.image.page : 1;
-				},
-				ascendingImageWidth: function (a, b) {
-						return a.image ? a.image.width - b.image.width : 1;
-				},
-				ascendingImageHeight: function (a, b) {
-						return a.image ? a.image.height - b.image.height : 1;
-				},
-				convertToExpectedModel: function (model) {
-						return {
-								image: {
-										page: model[0],
-										url: "https://cdn.mangaeden.com/mangasimg/" + model[1],
-										width: model[2],
-										height: model[3]
-								}
-						};
-				},
-				handleResponse: function (event, detail, sender) {
-						var images = detail.response.images;
-						
-						if (!images || images.length == 0) {
-								this.$.list.data = [];
-								return;
-						}
-						images = images.map(this.convertToExpectedModel);
-						
-						images.sort(this.ascendingImageWidth);
-						this.medianImageWidth = Math.max(256, images[Math.floor(images.length/2)].image.width);
-						console.log("Median width updated to " + this.medianImageWidth);
-						
-						images.sort(this.ascendingImageHeight);
-						this.medianImageHeight = Math.max(1024, images[Math.floor(images.length/2)].image.height);
-						console.log("Median height updated to " + this.medianImageHeight);
+            this.$.list.addEventListener("scroll", this.resetEndOFScrollTimer.bind(this));
+        },
+        chapterIdChanged: function (oldValue, newValue) {
+            console.log(newValue);
+            this.$.list.data = [];
+            this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/chapter/" + newValue + "/";
+            this.$.ajax.go();
+        },
+        ascendingImageData: function (a, b) {
+            return a.image ? a.image.page - b.image.page : 1;
+        },
+        ascendingImageWidth: function (a, b) {
+            return a.image ? a.image.width - b.image.width : 1;
+        },
+        ascendingImageHeight: function (a, b) {
+            return a.image ? a.image.height - b.image.height : 1;
+        },
+        convertToExpectedModel: function (model) {
+            return {
+                image: {
+                    page: model[0],
+                    url: "https://cdn.mangaeden.com/mangasimg/" + model[1],
+                    width: model[2],
+                    height: model[3]
+                }
+            };
+        },
+        handleResponse: function (event, detail, sender) {
+            var images = detail.response.images;
+            
+            if (!images || images.length == 0) {
+                this.$.list.data = [];
+                return;
+            }
+            images = images.map(this.convertToExpectedModel);
+            
+            images.sort(this.ascendingImageWidth);
+            this.medianImageWidth = Math.max(256, images[Math.floor(images.length/2)].image.width);
+            console.log("Median width updated to " + this.medianImageWidth);
+            
+            images.sort(this.ascendingImageHeight);
+            this.medianImageHeight = Math.max(1024, images[Math.floor(images.length/2)].image.height);
+            console.log("Median height updated to " + this.medianImageHeight);
 
-						this.minImageHeight = Math.max(200, images.reduce(
-								function (prev, curr) { return Math.min(prev, curr.image.height); }, images[0].image.height));
-						console.log("Min height updated to " + this.minImageHeight);
-						
-						images.sort(this.ascendingImageData);
-						
-						this.$.list.data = images;
-						this.$.list.scrollToItem(0);
+            this.minImageHeight = Math.max(200, images.reduce(
+                function (prev, curr) { return Math.min(prev, curr.image.height); }, images[0].image.height));
+            console.log("Min height updated to " + this.minImageHeight);
+            
+            images.sort(this.ascendingImageData);
+            
+            this.$.list.data = images;
+            this.$.list.scrollToItem(0);
 
-						this.addNextChapterButton_();
-				},
-				backClicked: function () {
-						this.$.list.data = [];
-						document.querySelector("app-router").go("/manga/" + escape(this.mangaId));
-						this.fire("back", {});
-				},
-				dateFromEpoch: function (seconds) {
-						return (new Date(seconds * 1000)).toLocaleDateString();
-				},
-				nextChapterId: null,
-				nextChapterNumber: null,
-				nextChapterTitle: null,
-				chapter: {
-						title: "Loading...",
-						number: "-",
-						date: 0,
-				},
-				chapterListLoaded: function (event, detail, sender) {
-						var index = 0;
-						for (index = 0; index < detail.length; index++) {
-								if (detail[index].id == this.chapterId) {
-										break;
-								}
-						}
+            this.addNextChapterButton_();
+        },
+        backClicked: function () {
+            this.$.list.data = [];
+            document.querySelector("app-router").go("/manga/" + escape(this.mangaId));
+            this.fire("back", {});
+        },
+        dateFromEpoch: function (seconds) {
+            return (new Date(seconds * 1000)).toLocaleDateString();
+        },
+        nextChapterId: null,
+        nextChapterNumber: null,
+        nextChapterTitle: null,
+        chapter: {
+            title: "Loading...",
+            number: "-",
+            date: 0,
+        },
+        chapterListLoaded: function (event, detail, sender) {
+            var index = 0;
+            for (index = 0; index < detail.length; index++) {
+                if (detail[index].id == this.chapterId) {
+                    break;
+                }
+            }
 
-						// Not found?!
-						if (index == detail.length) {
-								console.warn("Could not find current chapter in chapter list.");
-								return;
-						}
+            // Not found?!
+            if (index == detail.length) {
+                console.warn("Could not find current chapter in chapter list.");
+                return;
+            }
 
-						this.chapter = detail[index];
-						if (this.driveModelReady) {
-								this.markChapterRead_();
-						}
+            this.chapter = detail[index];
+            if (this.driveModelReady) {
+                this.markChapterRead_();
+            }
 
-						// Setup next button.
-						if (index > 0) {
-								this.nextChapterId = detail[index-1].id;
-								this.nextChapterNumber = detail[index-1].number;
-								this.nextChapterTitle = detail[index-1].title;
-						}
-						this.addNextChapterButton_();
+            // Setup next button.
+            if (index > 0) {
+                this.nextChapterId = detail[index-1].id;
+                this.nextChapterNumber = detail[index-1].number;
+                this.nextChapterTitle = detail[index-1].title;
+            }
+            this.addNextChapterButton_();
 
-						// Scroll to page.
-						window.requestAnimationFrame(this.$.list.scrollToItem.bind(this.$.list, this.page));
-				},
-				driveModelReadyChanged: function (oldvalue, newvalue) {
-						if (!newvalue || !this.chapter.id) {
-								return;
-						}
-						this.markChapterRead_();
-				},
-				markChapterRead_: function() {
-						this.$.driveData.setLatestReadChapterDate(this.mangaId, this.chapter.date);
-						this.$.driveData.markChapterRead(this.mangaId, this.chapterId);
-				},
-				addNextChapterButton_: function() {
-						if (!this.nextChapterId || this.$.list.data.length == 0) {
-								return;
-						}
-						this.$.list.data.push({
-								nextChapterButton: true
-						});
-				},
-				nextChapter: function() {
-						document.querySelector("app-router").go(
-								"/manga/" + [this.mangaId, this.nextChapterId].map(escape).join("/"));
-				},
-				toggleFullscreen: function() {
-						this.fullscreen = !this.fullscreen;
-				},
-				handlePageCrossed: function (event, detail, sender) {
-						//console.log("Page " + detail.page +" crossed! Direction: " + detail.direction);
+            // Scroll to page.
+            window.requestAnimationFrame(this.$.list.scrollToItem.bind(this.$.list, this.page));
+        },
+        driveModelReadyChanged: function (oldvalue, newvalue) {
+            if (!newvalue || !this.chapter.id) {
+                return;
+            }
+            this.markChapterRead_();
+        },
+        markChapterRead_: function() {
+            this.$.driveData.setLatestReadChapterDate(this.mangaId, this.chapter.date);
+            this.$.driveData.markChapterRead(this.mangaId, this.chapterId);
+        },
+        addNextChapterButton_: function() {
+            if (!this.nextChapterId || this.$.list.data.length == 0) {
+                return;
+            }
+            this.$.list.data.push({
+                nextChapterButton: true
+            });
+        },
+        nextChapter: function() {
+            document.querySelector("app-router").go(
+                "/manga/" + [this.mangaId, this.nextChapterId].map(escape).join("/"));
+        },
+        toggleFullscreen: function() {
+            this.fullscreen = !this.fullscreen;
+        },
+        handlePageCrossed: function (event, detail, sender) {
+            //console.log("Page " + detail.page +" crossed! Direction: " + detail.direction);
 
-						if (detail.direction == "down") {
-								this.page = detail.page + 1;
-						} else {
-								this.page = detail.page;
-						}
-				},
-				lastScrollTime: 0,
-				endOfScrollCheck: null,
-				resetEndOFScrollTimer: function() {
-						this.lastScrollTime = (new Date()).getTime();
+            if (detail.direction == "down") {
+                this.page = detail.page + 1;
+            } else {
+                this.page = detail.page;
+            }
+        },
+        lastScrollTime: 0,
+        endOfScrollCheck: null,
+        resetEndOFScrollTimer: function() {
+            this.lastScrollTime = (new Date()).getTime();
 
-						if (!this.endOfScrollCheck) {
-								this.endOfScrollCheck = setInterval(this.endOfScroll.bind(this), 500);
-						}
-				},
-				endOfScroll: function() {
-						if ((new Date()).getTime() - this.lastScrollTime < 500) {
-								return;
-						}
+            if (!this.endOfScrollCheck) {
+                this.endOfScrollCheck = setInterval(this.endOfScroll.bind(this), 500);
+            }
+        },
+        endOfScroll: function() {
+            if ((new Date()).getTime() - this.lastScrollTime < 500) {
+                return;
+            }
 
-						clearInterval(this.endOfScrollCheck);
-						this.endOfScrollCheck = null;
+            clearInterval(this.endOfScrollCheck);
+            this.endOfScrollCheck = null;
 
-						window.history.replaceState(
-								null, null, "#/manga/" +
-										[this.mangaId, this.chapterId, this.page].map(escape).join("/"));
-				},
-		});
-	</script>
+            window.history.replaceState(
+                null, null, "#/manga/" +
+                    [this.mangaId, this.chapterId, this.page].map(escape).join("/"));
+        },
+    });
+  </script>
 </polymer-element>

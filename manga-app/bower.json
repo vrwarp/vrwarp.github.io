@@ -38,6 +38,7 @@
     "core-list": "Polymer/core-list#~0.5.2",
     "paper-fab": "Polymer/paper-fab#~0.5.2",
     "waypoints": "~3.0.1",
-    "google-signin": "git://github.com/GoogleWebComponents/google-signin#~0.2.0"
+    "google-signin": "git://github.com/GoogleWebComponents/google-signin#~0.2.0",
+    "paper-progress": "Polymer/paper-progress#~0.5.2"
   }
 }

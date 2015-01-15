@@ -5,44 +5,44 @@
 
 <polymer-element name="manga-list-item" attributes="manga" noscript>
   <template>
-		<style>
-			.card {
-					padding: 8px;
-			}
+    <style>
+      .card {
+          padding: 8px;
+      }
 
-			.mangaTitle {
-					height: 20px;
-					margin: 10px;
-					white-space: nowrap;
-					overflow: hidden;
-					text-overflow: ellipsis;
-			}
-			
-			.fill {
-					height: 100%;
-			}
-			
-			paper-shadow {
-					background-color: #FFF;
-			};
+      .mangaTitle {
+          height: 20px;
+          margin: 10px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+      }
+      
+      .fill {
+          height: 100%;
+      }
+      
+      paper-shadow {
+          background-color: #FFF;
+      };
     </style>
 
-		<div class="card"  fit>
-			<paper-shadow z="1" vertical layout style="width:100%;height:100%">
-				<core-image
-					 flex
-					 src="{{manga.image}}"
-					 sizing="cover"
-					 preload
-					 loading="{{imageLoading}}"></core-image>
-				<div class="mangaTitle {{{fill : imageLoading} | tokenList}}"
-						 title="{{manga.title}}" horizontal layout>
-					<div flex>{{manga.title}}</div>
-					<template if="{{manga.starred}}">
-						<core-icon icon="{{manga.hasUnreadChapters ? 'star' : 'star-outline'}}"></core-icon>
-					</template>
-				</div>
-			</paper-shadow>
-		</div>
+    <div class="card"  fit>
+      <paper-shadow z="1" vertical layout style="width:100%;height:100%">
+        <core-image
+           flex
+           src="{{manga.image}}"
+           sizing="cover"
+           preload
+           loading="{{imageLoading}}"></core-image>
+        <div class="mangaTitle {{{fill : imageLoading} | tokenList}}"
+             title="{{manga.title}}" horizontal layout>
+          <div flex>{{manga.title}}</div>
+          <template if="{{manga.starred}}">
+            <core-icon icon="{{manga.hasUnreadChapters ? 'star' : 'star-outline'}}"></core-icon>
+          </template>
+        </div>
+      </paper-shadow>
+    </div>
   </template>
 </polymer-element>

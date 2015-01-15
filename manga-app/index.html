@@ -1,54 +1,54 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Manga App</title>
-		
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-		<meta name="mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<link rel="icon" type="image/png" sizes="36x36" href="assets/launcher-icon-0-75x.png" />
-		<link rel="icon" type="image/png" sizes="48x48" href="assets/launcher-icon-1x.png" />
-		<link rel="icon" type="image/png" sizes="72x72" href="assets/launcher-icon-1-5x.png" />
-		<link rel="icon" type="image/png" sizes="96x96" href="assets/launcher-icon-2x.png" />
-		<link rel="icon" type="image/png" sizes="144x144" href="assets/launcher-icon-3x.png" />
-		<link rel="icon" type="image/png" sizes="192x192" href="assets/launcher-icon-4x.png" />
-		<link rel="manifest" href="manifest.json">
+  <head>
+    <title>Manga App</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/png" sizes="36x36" href="assets/launcher-icon-0-75x.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/launcher-icon-1x.png" />
+    <link rel="icon" type="image/png" sizes="72x72" href="assets/launcher-icon-1-5x.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/launcher-icon-2x.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="assets/launcher-icon-3x.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/launcher-icon-4x.png" />
+    <link rel="manifest" href="manifest.json">
 
-		<script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
-		<link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
-		<link rel="import" href="bower_components/core-pages/core-pages.html">
-		<link rel="import" href="bower_components/font-roboto/roboto.html">
-		<link rel="import" href="bower_components/app-router/app-router.html">
-		<link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
-		<style>
-			html,body {
-					font-family: 'RobotoDraft', sans-serif;
-			}
-		</style>
-	</head>
-	<body fullbleed unresolved>
-		<manga-app-data></manga-app-data>
-		<app-router core-animated-pages mode="hash">
-			<app-route path="/search/:searchFilter"
-								 import="elements/manga-list.html">
-			</app-route>
-			
- 			<app-route path="/manga/:mangaId/:chapterId"
-								 import="elements/chapter-view.html">
-			</app-route>
+    <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
+    <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="bower_components/core-pages/core-pages.html">
+    <link rel="import" href="bower_components/font-roboto/roboto.html">
+    <link rel="import" href="bower_components/app-router/app-router.html">
+    <link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
+    <style>
+      html,body {
+          font-family: 'RobotoDraft', sans-serif;
+      }
+    </style>
+  </head>
+  <body fullbleed unresolved>
+    <manga-app-data></manga-app-data>
+    <app-router core-animated-pages mode="hash">
+      <app-route path="/search/:searchFilter"
+                 import="elements/manga-list.html">
+      </app-route>
+      
+      <app-route path="/manga/:mangaId/:chapterId"
+                 import="elements/chapter-view.html">
+      </app-route>
 
- 			<app-route path="/manga/:mangaId/:chapterId/:page"
-								 import="elements/chapter-view.html">
-			</app-route>
-			
-			<app-route path="/manga/:mangaId"
-								 import="elements/chapter-list.html">
-			</app-route>
-			
-			<app-route path="*"
-								 import="elements/manga-list.html">
-			</app-route>
-		</app-router>
-	</body>
+      <app-route path="/manga/:mangaId/:chapterId/:page"
+                 import="elements/chapter-view.html">
+      </app-route>
+      
+      <app-route path="/manga/:mangaId"
+                 import="elements/chapter-list.html">
+      </app-route>
+      
+      <app-route path="*"
+                 import="elements/manga-list.html">
+      </app-route>
+    </app-router>
+  </body>
 </html>
 

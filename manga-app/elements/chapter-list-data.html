@@ -5,98 +5,98 @@
 
 <polymer-element name="chapter-list-data" attributes="mangaId starred latestReadDate chaptersRead">
   <template>
-		<gdrive-data
-			 id="driveData"
-			 modelReady="{{driveModelReady}}"></gdrive-data>
-		<core-ajax 
-			 id="ajax"
-			 handleAs="json"
-			 on-core-response="{{handleResponse}}"></core-ajax>
-		<!-- Consider switching to polymer-localforage -->
-		<!--
-		<core-localstorage name="mangaAppData" value="{{value}}"></core-localstorage>
-		-->
+    <gdrive-data
+       id="driveData"
+       modelReady="{{driveModelReady}}"></gdrive-data>
+    <core-ajax 
+       id="ajax"
+       handleAs="json"
+       on-core-response="{{handleResponse}}"></core-ajax>
+    <!-- Consider switching to polymer-localforage -->
+    <!--
+    <core-localstorage name="mangaAppData" value="{{value}}"></core-localstorage>
+    -->
 
   </template>
-	<script>
-		(function() {
-				var initialized_ = false;
-				var chapterList_ = [];
-				var mangaId_ = "something";
+  <script>
+    (function() {
+        var initialized_ = false;
+        var chapterList_ = [];
+        var mangaId_ = "something";
 
-				Polymer({
-						loading: !initialized_,
-						latestReadDate: (new Date()).getTime() / 1000.0,
-						ready: function() {
-								this.updateStarred_();
-								this.updateReadDate_();
-						},
-						domReady: function() {
-								if (mangaId_ == this.mangaId && initialized_) {
-										this.chapterListLoaded_();
-								}
-						},
-						mangaIdChanged: function(oldValue, newValue) {
-								if (!this.mangaId) {
-										return;
-								}
+        Polymer({
+            loading: !initialized_,
+            latestReadDate: (new Date()).getTime() / 1000.0,
+            ready: function() {
+                this.updateStarred_();
+                this.updateReadDate_();
+            },
+            domReady: function() {
+                if (mangaId_ == this.mangaId && initialized_) {
+                    this.chapterListLoaded_();
+                }
+            },
+            mangaIdChanged: function(oldValue, newValue) {
+                if (!this.mangaId) {
+                    return;
+                }
 
-								if (mangaId_ != this.mangaId) {
-										mangaId_ = null;
-										this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/manga/" + this.mangaId + "/";
-										this.$.ajax.go();
-								} else {
-										this.updateStarred_();
-										this.updateReadDate_();
-								}
-						},
-						convertToExpectedModel: function (model) {
-								return {
-										id: model[3],
-										title: model[2],
-										number: model[0],
-										date: model[1]
-								};
-						},
-						handleResponse: function (event, detail, sender) {
-								mangaId_ = this.mangaId;
-								chapterList_ = detail.response.chapters.map(this.convertToExpectedModel);
-								initialized_ = true;
-								this.updateStarred_();
-								this.updateReadDate_();
-								this.chapterListLoaded_();
-						},
-						chapterListLoaded_: function() {
-								this.fire("chapter-list-loaded", chapterList_);
-						},
-						driveModelReadyChanged: function (oldvalue, newvalue) {
-								this.updateStarred_();
-								this.updateReadDate_();
-						},
-						updateReadDate_: function () {
-								if (!mangaId_ || !this.driveModelReady) {
-										return;
-								}
-								this.latestReadDate = this.$.driveData.getLatestReadChapterDate(mangaId_);
-								this.chaptersRead = this.$.driveData.getReadChapters(mangaId_);
-						},
-						updateStarred_: function() {
-								if (!mangaId_ || !this.driveModelReady) {
-										return;
-								}
+                if (mangaId_ != this.mangaId) {
+                    mangaId_ = null;
+                    this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/manga/" + this.mangaId + "/";
+                    this.$.ajax.go();
+                } else {
+                    this.updateStarred_();
+                    this.updateReadDate_();
+                }
+            },
+            convertToExpectedModel: function (model) {
+                return {
+                    id: model[3],
+                    title: model[2],
+                    number: model[0],
+                    date: model[1]
+                };
+            },
+            handleResponse: function (event, detail, sender) {
+                mangaId_ = this.mangaId;
+                chapterList_ = detail.response.chapters.map(this.convertToExpectedModel);
+                initialized_ = true;
+                this.updateStarred_();
+                this.updateReadDate_();
+                this.chapterListLoaded_();
+            },
+            chapterListLoaded_: function() {
+                this.fire("chapter-list-loaded", chapterList_);
+            },
+            driveModelReadyChanged: function (oldvalue, newvalue) {
+                this.updateStarred_();
+                this.updateReadDate_();
+            },
+            updateReadDate_: function () {
+                if (!mangaId_ || !this.driveModelReady) {
+                    return;
+                }
+                this.latestReadDate = this.$.driveData.getLatestReadChapterDate(mangaId_);
+                this.chaptersRead = this.$.driveData.getReadChapters(mangaId_);
+            },
+            updateStarred_: function() {
+                if (!mangaId_ || !this.driveModelReady) {
+                    return;
+                }
 
-								this.starred = this.$.driveData.isMangaStarred(mangaId_);
-						},
-						toggleStarred: function() {
-								if (!this.mangaId || !this.driveModelReady) {
-										return;
-								}
+                this.starred = this.$.driveData.isMangaStarred(mangaId_);
+            },
+            toggleStarred: function() {
+                if (!this.mangaId || !this.driveModelReady) {
+                    return;
+                }
 
-								this.updateStarred_();
-								this.starred = !this.starred;
-								this.$.driveData.setMangaStarred(this.mangaId, this.starred);
-						},
-				});
-		})();
-	</script>
+                this.updateStarred_();
+                this.starred = !this.starred;
+                this.$.driveData.setMangaStarred(this.mangaId, this.starred);
+            },
+        });
+    })();
+  </script>
 </polymer-element>
