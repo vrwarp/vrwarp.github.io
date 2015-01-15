@@ -18,7 +18,17 @@
         var manga_ = {};
         var starredManga_ = new Set();
         var latestReadDateMap_ = new Map();
-        var CACHE_VERSION = 1;
+
+        var CACHE_VERSION = 2;
+        localforage.config({
+            name: 'manga-app-cache'
+        });
+        localforage.getItem("manga/version").then(function(version) {
+            if (version != CACHE_VERSION) {
+                console.log("Cache version changed from " + version + " to " + CACHE_VERSION + ". Clearing cache.");
+                localforage.clear();
+            }
+        });
 
         var nextInstanceId_ = 0;
         var instanceKeys_ = [];
