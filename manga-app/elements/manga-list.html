@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/core-a11y-keys/core-a11y-keys.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/google-signin/google-icons.html">
 <link rel="import" href="gdrive-data.html">
 <link rel="import" href="manga-list-data.html">
 <link rel="import" href="manga-list-item.html">
@@ -101,7 +102,8 @@
 				</template>
 				<template if="{{!loggedIn}}">
 					<paper-icon-button
-						 icon="account-circle"
+						 icon="google:google-plus"
+						 style="background-color: #dd4b39; border-radius: 20px;"
 						 on-click="{{authenticate}}"></paper-icon-button>
 				</template>
 			</core-toolbar>
@@ -141,9 +143,9 @@
 								this.$.toolbarPages.selected = 1;
 								
 								var searchInput = this.$.searchInput;
-								window.setTimeout(function() {
+								window.requestAnimationFrame(function() {
 										searchInput.$.decorator.input.focus();
-								}, 0);
+								});
 						},
 						deactivateSearch: function (event, detail, sender) {
 								this.$.searchInput.value = "";

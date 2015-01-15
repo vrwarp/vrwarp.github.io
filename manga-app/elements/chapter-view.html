@@ -10,17 +10,67 @@
 <link rel="import" href="resize-listener.html">
 <link rel="import" href="chapter-list-data.html">
 <link rel="import" href="gdrive-data.html">
+<script type="text/javascript" src="../bower_components/waypoints/lib/noframework.waypoints.js"></script>
 
-<polymer-element name="chapter-view" attributes="mangaId chapterId fullscreen">
+<polymer-element name="chapter-page" attributes="imageUrl page context">
   <template>
 		<style>
-			.page core-image {
+			:host {
+					display: block;
+			}
+
+			core-image {
 					display: block;
 					background-color: #FFF;
 					width: 100%;
 					height: 100%;
 			}
+		</style>
+		<core-image 
+			 id="image"
+			 src="{{imageUrl}}"
+			 sizing="contain"
+			 fade
+			 preload
+			 loading="{{imageLoading}}"></core-image>
+		<div fit horizontal center-justified layout center>
+			<paper-spinner active?="{{imageLoading}}"></paper-spinner>
+		</div>
+	</template>
+	<script>
+		Polymer({
+				attachedCallback: function() {
+						console.log("Attached");
+						this.waypoint = new Waypoint({
+								element: this.$.image,
+								context: this.context,
+								enabled: false,
+								continuous: false,
+								handler: this.crossWaypoint.bind(this),
+						});
+						this.waypoint.enable();
+				},
+				detachedCallback: function() {
+						console.log("Detatched");
+						this.waypoint.destroy();
+				},
+				crossWaypoint: function(direction) {
+						this.fire("page-crossed", {direction: direction, page: this.page});
+				},
+				pageChanged: function() {
+						if (this.waypoint) {
+								this.waypoint.disable();
+								this.waypoint.context.refresh();
+								window.requestAnimationFrame(this.waypoint.enable.bind(this.waypoint));
+						}
+				},
+		});
+	</script>
+</ploymer-element>
 
+<polymer-element name="chapter-view" attributes="mangaId chapterId page fullscreen">
+  <template>
+		<style>
 			.page #nextChapter div {
 					margin: 8px 8px;
 			}
@@ -86,7 +136,14 @@
 		<core-header-panel fit>
 			<core-toolbar class="core-narrow {{ {fullscreenMode: fullscreen} | tokenList}}">
         <paper-icon-button icon="arrow-back" on-click="{{backClicked}}"></paper-icon-button>
-				<div>Chapter {{chapter.number}}: {{chapter.title}}</div>
+				<div title="Chapter {{chapter.number}}: {{chapter.title}}" style="overflow: hidden; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+					<template if="{{listWidth < 640}}">
+						{{chapter.title}}
+					</template>
+					<template if="{{listWidth >= 640}}">
+						Chapter {{chapter.number}}: {{chapter.title}}
+					</template>
+				</div>
 				<div flex></div>
 				<paper-icon-button icon="fullscreen" on-click="{{toggleFullscreen}}"></paper-icon-button>
 			</core-toolbar>
@@ -99,18 +156,11 @@
 				<template>
 					<div class="page" >
 						<template if="{{model.image}}">
-							<div style="width:{{listWidth > model.image.width ? model.image.width : listWidth}}px;
-													height:{{model.image.height * ((listWidth > model.image.width ? model.image.width : listWidth) / model.image.width)}}px;
-													margin: 0 auto;">
-								<core-image 
-									 src="{{model.image.url}}"
-									 sizing="contain"
-									 fade
-									 preload
-									 loading="{{imageLoading}}"></core-image>
-								<div fit horizontal center-justified layout center>
-									<paper-spinner active?="{{imageLoading}}"></paper-spinner>
-								</div>
+							<chapter-page imageUrl="{{model.image.url}}" page="{{index}}" context="{{$.list}}"
+														on-page-crossed="{{handlePageCrossed}}"
+														style="width:{{listWidth > model.image.width ? model.image.width : listWidth}}px;
+																	 height:{{model.image.height * ((listWidth > model.image.width ? model.image.width : listWidth) / model.image.width)}}px;
+																	 margin: 0 auto;"></chapter-page>
 						</template>
 						<template if="{{model.nextChapterButton}}">
 							<div id="nextChapter">
@@ -131,6 +181,7 @@
   </template>
 	<script>
 		Polymer({
+				page: 0,
 				fullscreen: false,
 				ready: function() {
 						if (this.chapterId) {
@@ -240,6 +291,9 @@
 								this.nextChapterTitle = detail[index-1].title;
 						}
 						this.addNextChapterButton_();
+
+						// Scroll to page.
+						window.requestAnimationFrame(this.$.list.scrollToItem.bind(this.$.list, this.page));
 				},
 				driveModelReadyChanged: function (oldvalue, newvalue) {
 						if (!newvalue || !this.chapter.id) {
@@ -265,6 +319,18 @@
 				},
 				toggleFullscreen: function() {
 						this.fullscreen = !this.fullscreen;
+				},
+				handlePageCrossed: function (event, detail, sender) {
+						console.log("Page " + detail.page +" crossed! Direction: " + detail.direction);
+
+						if (detail.direction == "down") {
+								this.page = detail.page + 1;
+						} else {
+								this.page = detail.page;
+						}
+						window.history.replaceState(
+								null, null, "#/manga/" +
+										[this.mangaId, this.chapterId, this.page].map(escape).join("/"));
 				},
 		});
 	</script>

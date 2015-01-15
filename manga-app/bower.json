@@ -36,6 +36,8 @@
     "core-toolbar": "Polymer/core-toolbar#~0.5.2",
     "core-pages": "Polymer/core-pages#~0.5.2",
     "core-list": "Polymer/core-list#~0.5.2",
-    "paper-fab": "Polymer/paper-fab#~0.5.2"
+    "paper-fab": "Polymer/paper-fab#~0.5.2",
+    "waypoints": "~3.0.1",
+    "google-signin": "git://github.com/GoogleWebComponents/google-signin#~0.2.0"
   }
 }
