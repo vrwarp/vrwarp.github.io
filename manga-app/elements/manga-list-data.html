@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 <link rel="import" href="gdrive-data.html">
+<script type="text/javascript" src="../bower_components/localforage/dist/localforage.js"></script>
 
 <polymer-element name="manga-list-data" attribute="loading">
   <template>
@@ -9,11 +10,6 @@
 			 id="driveData"
 			 modelReady="{{driveModelReady}}"></gdrive-data>
 		<core-ajax id="ajax" handleAs="json"></core-ajax>
-		<!-- Consider switching to polymer-localforage -->
-		<!--
-		<core-localstorage name="mangaAppData" value="{{value}}"></core-localstorage>
-		-->
-
   </template>
 	<script>
 		(function() {
@@ -137,6 +133,28 @@
 
 				// initial refresh.
 				refreshManga_().then(function () {
+						localforage.setItem("manga", manga_);
+
+						initialized_ = true;
+						for (var i = 0; i < instanceKeys_.length; i++) {
+								var key = instanceKeys_[i];
+								if (instanceMap_.has(key)) {
+										var instance = instanceMap_.get(key);
+										instance.loading = false;
+										instance.mangaListLoaded_();
+								}
+						}
+				});
+
+				// load cached data.
+				localforage.getItem("manga").then(function(value) {
+						if (!value || initialized_) {
+								return;
+						}
+
+						manga_ = value;
+						console.log("Loaded manga from cache.");
+
 						initialized_ = true;
 						for (var i = 0; i < instanceKeys_.length; i++) {
 								var key = instanceKeys_[i];
