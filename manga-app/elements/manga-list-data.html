@@ -142,11 +142,13 @@
 						localforage.getItem("version"),
 						localforage.getItem("manga")]).then(function(values) {
 								if (values[0] != CACHE_VERSION || !values[1]) {
-										return;
+										return Promise.reject();
 								}
 								
 								console.log("Loaded manga from cache.");
 								manga_ = values[1];
+						}).catch(function () {
+								return initialRefresh;
 						});
 				Promise.race([initialRefresh, fetchFromCache]).then(function () {
 						initialized_ = true;
