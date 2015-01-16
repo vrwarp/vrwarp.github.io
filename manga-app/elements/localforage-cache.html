@@ -1,0 +1,28 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<script type="text/javascript" src="../bower_components/localforage/dist/localforage.js"></script>
+
+<polymer-element name="localforage-cache">
+  <template></template>
+  <script>
+    var CURRENT_CACHE_VERSION = 4;
+    var CACHE_VERSION = "version";
+
+    var MANGA_MANGA = "manga/manga";
+    var MANGA_RESPONSE_SIZE = "manga/response-size";
+    var MANGA_STARRED = "manga/starred";
+
+    (function() {
+        localforage.config({
+            name: 'manga-app-cache'
+        });
+        localforage.getItem(CACHE_VERSION).then(function(version) {
+            if (version != CURRENT_CACHE_VERSION) {
+            console.log("Cache version changed from " + version + " to " + CURRENT_CACHE_VERSION + ". Clearing cache.");
+                localforage.clear();
+            }
+        });
+
+        Polymer({});
+    })();
+  </script>
+</polymer-element>

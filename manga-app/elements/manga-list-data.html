@@ -2,7 +2,7 @@
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 <link rel="import" href="gdrive-data.html">
-<script type="text/javascript" src="../bower_components/localforage/dist/localforage.js"></script>
+<link rel="import" href="localforage-cache.html">
 <script type="text/javascript" src="utils.js"></script>
 
 <polymer-element name="manga-list-data" attributes="loading progress">
@@ -17,18 +17,21 @@
         var initialized_ = false;
         var manga_ = {};
         var starredManga_ = new Set();
-        var latestReadDateMap_ = new Map();
+        localforage.getItem(MANGA_STARRED).then(function (value) {
+            if (!value || starredManga_.size > 0) {
+                return;
+            }
 
-        var CACHE_VERSION = 2;
-        localforage.config({
-            name: 'manga-app-cache'
-        });
-        localforage.getItem("manga/version").then(function(version) {
-            if (version != CACHE_VERSION) {
-                console.log("Cache version changed from " + version + " to " + CACHE_VERSION + ". Clearing cache.");
-                localforage.clear();
+            console.log("Loading starred manga from cache");
+            starredManga_ = new Set(value);
+            for (var i = 0; i < instanceKeys_.length; i++) {
+                var key = instanceKeys_[i];
+                if (instanceMap_.has(key)) {
+                    instanceMap_.get(key).updateStarred_();
+                }
             }
         });
+        var latestReadDateMap_ = new Map();
 
         var nextInstanceId_ = 0;
         var instanceKeys_ = [];
@@ -101,12 +104,12 @@
             });
 
             // Cache the updated value.
-            localforage.setItem("manga/manga", manga_);
-            localforage.setItem("manga/version", CACHE_VERSION);
+            localforage.setItem(MANGA_MANGA, manga_);
+            localforage.setItem(CACHE_VERSION, CURRENT_CACHE_VERSION);
         }
 
         var cacheLength_ = -1;
-        localforage.getItem("manga/response-size").then(function(value) {
+        localforage.getItem(MANGA_RESPONSE_SIZE).then(function(value) {
             cacheLength_ = value;
         });
         var refreshMangaProgressEvent_ = function(event) {
@@ -121,7 +124,7 @@
 
         var refreshMangaLoadEndEvent_ = function(event) {
             updatePropertyOfInstances_("progress", 2);
-            localforage.setItem("manga/response-size", event.loaded);
+            localforage.setItem(MANGA_RESPONSE_SIZE, event.loaded);
         }
 
         var refreshManga_ = function() {
@@ -137,9 +140,9 @@
 
         var initialRefresh = refreshManga_();
         var fetchFromCache = Promise.all([
-            localforage.getItem("manga/version"),
-            localforage.getItem("manga/manga")]).then(function(values) {
-                if (values[0] != CACHE_VERSION || !values[1]) {
+            localforage.getItem(CACHE_VERSION),
+            localforage.getItem(MANGA_MANGA)]).then(function(values) {
+                if (values[0] != CURRENT_CACHE_VERSION || !values[1]) {
                     return Promise.reject();
                 }
                 
@@ -210,7 +213,13 @@
                 this.mangaListLoaded_();
             },
             updateStarred_: function() {
-                starredManga_ = this.$.driveData.getStarredManga();
+                if (this.driveModelReady) {
+                    starredManga_ = this.$.driveData.getStarredManga();
+
+                    var starredMangaList = [];
+                    starredManga_.forEach(function (value) { starredMangaList.push(value); });
+                    localforage.setItem(MANGA_STARRED, starredMangaList);
+                }
                 for (var key in manga_) {
                     manga_[key].starred = starredManga_.has(key);
                 }
