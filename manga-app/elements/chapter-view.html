@@ -40,7 +40,6 @@
   <script>
     Polymer({
         attachedCallback: function() {
-            console.log("Attached");
             this.waypoint = new Waypoint({
                 element: this.$.image,
                 context: this.context,
@@ -51,7 +50,6 @@
             this.waypoint.enable();
         },
         detachedCallback: function() {
-            console.log("Detatched");
             this.waypoint.destroy();
         },
         crossWaypoint: function(direction) {
@@ -208,7 +206,6 @@
             this.$.list.addEventListener("scroll", this.resetEndOFScrollTimer.bind(this));
         },
         chapterIdChanged: function (oldValue, newValue) {
-            console.log(newValue);
             this.$.list.data = [];
             this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/chapter/" + newValue + "/";
             this.$.ajax.go();
@@ -243,16 +240,13 @@
             
             images.sort(this.ascendingImageWidth);
             this.medianImageWidth = Math.max(256, images[Math.floor(images.length/2)].image.width);
-            console.log("Median width updated to " + this.medianImageWidth);
             
             images.sort(this.ascendingImageHeight);
             this.medianImageHeight = Math.max(1024, images[Math.floor(images.length/2)].image.height);
-            console.log("Median height updated to " + this.medianImageHeight);
 
             this.minImageHeight = Math.max(200, images.reduce(
                 function (prev, curr) { return Math.min(prev, curr.image.height); }, images[0].image.height));
-            console.log("Min height updated to " + this.minImageHeight);
-            
+
             images.sort(this.ascendingImageData);
             
             this.$.list.data = images;
@@ -332,8 +326,6 @@
             this.fullscreen = !this.fullscreen;
         },
         handlePageCrossed: function (event, detail, sender) {
-            //console.log("Page " + detail.page +" crossed! Direction: " + detail.direction);
-
             if (detail.direction == "down") {
                 this.page = detail.page + 1;
             } else {

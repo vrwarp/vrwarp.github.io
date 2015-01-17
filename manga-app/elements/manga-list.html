@@ -64,6 +64,7 @@
        profileImage="{{profileImage}}"></gdrive-data>
     
     <manga-list-data
+       id="mangaListData"
        progress="{{mangaListProgress}}"
        on-manga-list-loaded="{{mangaListLoaded}}"></manga-list-data>
 
@@ -81,6 +82,9 @@
                hero-id="search"
                icon="search"
                on-click="{{activateSearch}}"></paper-icon-button>
+            <paper-icon-button
+               icon="refresh"
+               on-click="{{refreshManga}}"></paper-icon-button>
           </section>
           <section horizontal layout center>
             <paper-icon-button
@@ -191,6 +195,17 @@
             authenticate: function() {
                 this.$.appData.authenticate();
             },
+            refreshManga: (function() {
+                var lastRefresh = 0;
+                return function() {
+                    var now = new Date().getTime();
+                    if (now - lastRefresh > 10000 /* milliseconds */) {
+                        this.$.mangaListData.refreshStarredManga();
+                    } else {
+                        this.$.mangaListData.refreshManga();
+                    }
+                    lastRefresh = now;
+                }})(),
         });
     })();
   </script>

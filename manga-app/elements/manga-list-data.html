@@ -17,20 +17,6 @@
         var initialized_ = false;
         var manga_ = {};
         var starredManga_ = new Set();
-        localforage.getItem(MANGA_STARRED).then(function (value) {
-            if (!value || starredManga_.size > 0) {
-                return;
-            }
-
-            console.log("Loading starred manga from cache");
-            starredManga_ = new Set(value);
-            for (var i = 0; i < instanceKeys_.length; i++) {
-                var key = instanceKeys_[i];
-                if (instanceMap_.has(key)) {
-                    instanceMap_.get(key).updateStarred_();
-                }
-            }
-        });
         var latestReadDateMap_ = new Map();
 
         var nextInstanceId_ = 0;
@@ -64,11 +50,13 @@
             }
         }
 
-        var convertHTMLEntitiesToString_ = function (text) {
+        var convertHTMLEntitiesToString_ = (function() {
             var temp = document.createElement('p');
-            temp.innerHTML = text.replace("<", "&lt;").replace(">", "&gt;");
-            return temp.textContent;
-        }
+            return function (text) {
+                temp.innerHTML = text.replace("<", "&lt;").replace(">", "&gt;");
+                return temp.textContent;
+            };
+        })();
 
         var convertToExpectedMangaModel_ = function (model) {
             return {
@@ -104,6 +92,15 @@
             });
 
             // Cache the updated value.
+            updateCache_();
+        }
+
+        var updateCache_ = function() {
+            if (starredManga_.size > 0) {
+                var starredMangaList = [];
+                starredManga_.forEach(function (value) { starredMangaList.push(value); });
+                localforage.setItem(MANGA_STARRED, starredMangaList);
+            }
             localforage.setItem(MANGA_MANGA, manga_);
             localforage.setItem(CACHE_VERSION, CURRENT_CACHE_VERSION);
         }
@@ -135,33 +132,83 @@
                     req.addEventListener("loadend", refreshMangaLoadEndEvent_, false);
                 }).then(function (data) {
                     updateManga_(data.manga.map(convertToExpectedMangaModel_));
+                    return manga_;
                 });
         }
 
-        var initialRefresh = refreshManga_();
-        var fetchFromCache = Promise.all([
+        var refreshStarredManga_ = function() {
+            var updatePromises = [];
+            starredManga_.forEach(function(mangaId) {
+                updatePropertyOfInstances_("progress", -1);
+                updatePromises.push(getJsonUrl(
+                    "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/manga/" + mangaId + "/").then(function (data) {
+                        var manga = manga_[mangaId];
+                        if (manga.latestChapterDate < data.last_chapter_date) {
+                            console.log("Update found for " + manga.title);
+                            manga.latestChapterDate = data.last_chapter_date;
+                            manga.hasUnreadChapters = 
+                                (latestReadDateMap_.has(mangaId) &&
+                                 manga.latestChapterDate > latestReadDateMap_.get(mangaId));
+                            notifyInstances_("update-manga", mangaId);
+                        }
+                    }));
+            });
+            var updateFinishedPromise = Promise.all(updatePromises);
+            updateFinishedPromise.then(updateCache_);
+            updateFinishedPromise.then(function() {
+                console.log("Finished updating starred manga!");
+            }, function() {
+                console.warn("Error updating starred manga!");
+            }).then(function() {
+                updatePropertyOfInstances_("progress", 2);
+            });
+            return updateFinishedPromise;
+        }
+
+        // Begin fetching initial data.
+        Promise.all([
             localforage.getItem(CACHE_VERSION),
-            localforage.getItem(MANGA_MANGA)]).then(function(values) {
+            localforage.getItem(MANGA_MANGA),
+            localforage.getItem(MANGA_STARRED)]).then(function(values) {
                 if (values[0] != CURRENT_CACHE_VERSION || !values[1]) {
                     return Promise.reject();
                 }
-                
+
                 console.log("Loaded manga from cache.");
                 manga_ = values[1];
-            }).catch(function () {
-                return initialRefresh;
-            });
-        Promise.race([initialRefresh, fetchFromCache]).then(function () {
-            initialized_ = true;
-            for (var i = 0; i < instanceKeys_.length; i++) {
-                var key = instanceKeys_[i];
-                if (instanceMap_.has(key)) {
-                    var instance = instanceMap_.get(key);
-                    instance.loading = false;
-                    instance.mangaListLoaded_();
+
+                if (values[2] && starredManga_.size == 0) {
+                    console.log("Loading starred manga from cache");
+                    starredManga_ = new Set(values[2]);
+                    for (var i = 0; i < instanceKeys_.length; i++) {
+                        var key = instanceKeys_[i];
+                        if (instanceMap_.has(key)) {
+                            instanceMap_.get(key).updateStarred_();
+                        }
+                    }
+
+                    // Begin light-weight refresh (refresh only starred manga).
+                    refreshStarredManga_();
+                } else {
+                    // No starred manga? Do a full refresh!
+                    refreshManga_();
                 }
-            }
-        });
+
+                return manga_;
+            }).catch(function () {
+                // Cache miss, so start a full refresh.
+                return refreshManga_();
+            }).then(function () {
+                initialized_ = true;
+                for (var i = 0; i < instanceKeys_.length; i++) {
+                    var key = instanceKeys_[i];
+                    if (instanceMap_.has(key)) {
+                        var instance = instanceMap_.get(key);
+                        instance.loading = false;
+                        instance.mangaListLoaded_();
+                    }
+                }
+            });
 
         Polymer({
             loading: !initialized_,
@@ -215,10 +262,7 @@
             updateStarred_: function() {
                 if (this.driveModelReady) {
                     starredManga_ = this.$.driveData.getStarredManga();
-
-                    var starredMangaList = [];
-                    starredManga_.forEach(function (value) { starredMangaList.push(value); });
-                    localforage.setItem(MANGA_STARRED, starredMangaList);
+                    updateCache_();
                 }
                 for (var key in manga_) {
                     manga_[key].starred = starredManga_.has(key);
@@ -231,6 +275,8 @@
                         manga_[key].latestChapterDate > latestReadDateMap_.get(key);
                 }
             },
+            refreshStarredManga: refreshStarredManga_,
+            refreshManga: refreshManga_,
         });
     })();
   </script>
