@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test</title>
+    <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
+    <link rel="import" href="../bower_components/paper-input/paper-input.html">
+    <link rel="import" href="../elements/my-element.html">
+  </head>
+  <body>
+    <template is="auto-binding">
+      <my-element test1="{{test1}}" test2="{{test2}}"></my-element>
+      <br>
+      <div><b>outside test1:</b> {{test1}}</div>
+      <div><b>outside test2:</b> {{test2}}</div>
+      <br>
+      <paper-input label="test1" value="{{test1}}"></paper-input>
+      <br>
+      <paper-input label="test2" value="{{test2}}"></paper-input>
+    </template>
+  </body>
+</html>
+

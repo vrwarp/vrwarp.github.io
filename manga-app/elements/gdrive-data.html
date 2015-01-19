@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
 
-<polymer-element name="gdrive-data" attributes="loggedIn profileName profileImage modelReady">
+<polymer-element name="gdrive-data" attributes="loggedIn profileName profileImage modelReady history">
   <template></template>
   <script>
     (function() {
@@ -35,10 +35,21 @@
                 }
             }
         }
+        var updateHistory_ = function () {
+            for (var i = 0; i < instanceKeys_.length; i++) {
+                var key = instanceKeys_[i];
+                if (instanceMap_.has(key)) {
+                    instanceMap_.get(key).updateHistory_();
+                }
+            }
+        }
+
+        var LATEST_VERSION = 3;
 
         var initialized_ = false;
         var model_ = null;
         var mangaMap_ = null;
+        var historyList_ = null;
         var authenticated_ = false;
         var profileName_ = null;
         var profileImage_ = null;
@@ -51,6 +62,7 @@
         var CHAPTER = "chapter";
         var CHAPTER_READ = "read";
         var CHAPTER_PAGE = "page";
+        var HISTORY = "history";
         
         var CLIENT_ID = '423468108258-2i6sdlvnc644qd0nkphhiae2trvaeusb.apps.googleusercontent.com';
         var SCOPES = [
@@ -123,7 +135,8 @@
         var initializeModel_ = function(model) {
             var root = model.getRoot();
             root.set(MANGA, model.createMap());
-            root.set(VERSION, 2);
+            root.set(HISTORY, model.createList());
+            root.set(VERSION, LATEST_VERSION);
         }
 
         var updateModel_ = function(model) {
@@ -159,9 +172,13 @@
                 root.delete(V1_READ);
                 model.endCompoundOperation();
                 console.log("Updated model from v1 to v2");
-
-                updateModel_(model);
-                return;
+            }
+            if (root.get(VERSION) == 2) {
+                model.beginCompoundOperation("v2to3", false);
+                root.set(HISTORY, model.createList());
+                root.set(VERSION, 3);
+                model.endCompoundOperation();
+                console.log("Updated model from v2 to v3");
             }
         }
 
@@ -171,12 +188,19 @@
 
             var root = model_.getRoot();
 
-            if (root.get(VERSION) != 2) {
+            if (root.get(VERSION) != LATEST_VERSION) {
                 console.error("Model version " + root.get(VERSION) + " is not supported!");
                 return;
             }
 
             mangaMap_ = root.get(MANGA);
+            historyList_ = root.get(HISTORY);
+            historyList_.addEventListener(
+                gapi.drive.realtime.EventType.VALUES_ADDED, updateHistory_, false);
+            historyList_.addEventListener(
+                gapi.drive.realtime.EventType.VALUES_REMOVED, updateHistory_, false);
+            historyList_.addEventListener(
+                gapi.drive.realtime.EventType.VALUES_SET, updateHistory_, false);
 
             // TODO: watch version for changes.
             initialized_ = true;
@@ -218,6 +242,8 @@
                 if (authenticated_) {
                     this.authenticatedChanged_();
                 }
+
+                this.notifier = Object.getNotifier(this);
             },
             domReady: function() {
                 addInstance_(this);
@@ -230,6 +256,7 @@
             modelReady: false,
             profileName: "",
             profileImage: "",
+            history: [],
             authenticatedChanged_: function() {
                 this.profileName = profileName_;
                 this.profileImage = profileImage_;
@@ -345,6 +372,33 @@
                 });
 
                 return readChapterSet;
+            },
+            readPage: function (mangaId, chapterId, page) {
+                if (!initialized_) {
+                    return;
+                }
+
+                var lastItem = {};
+                if (historyList_.length > 0) {
+                    lastItem = historyList_.get(historyList_.length - 1);
+                }
+
+                var item = {manga: mangaId, chapter: chapterId, page: page};
+                if (lastItem.manga == mangaId && lastItem.chapter == chapterId) {
+                    historyList_.set(historyList_.length - 1, item);
+                } else {
+                    historyList_.push(item);
+                }
+            },
+            modelReadyChanged: function (oldValue, newValue) {
+                if (!newValue) {
+                    return;
+                }
+
+                this.updateHistory_();
+            },
+            updateHistory_: function() {
+                this.history = historyList_.asArray();
             },
             authenticate: function() {
                 // Authenticate with a pop-up.

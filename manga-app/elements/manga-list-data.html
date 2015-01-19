@@ -50,17 +50,9 @@
             }
         }
 
-        var convertHTMLEntitiesToString_ = (function() {
-            var temp = document.createElement('p');
-            return function (text) {
-                temp.innerHTML = text.replace("<", "&lt;").replace(">", "&gt;");
-                return temp.textContent;
-            };
-        })();
-
         var convertToExpectedMangaModel_ = function (model) {
             return {
-                title: convertHTMLEntitiesToString_(model.t),
+                title: convertHTMLEntitiesToString(model.t),
                 id: model.i,
                 image: model.im ? "https://cdn.mangaeden.com/mangasimg/" + model.im : undefined,
                 latestChapterDate: model.ld,

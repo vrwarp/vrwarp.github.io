@@ -15,11 +15,12 @@
     <link rel="manifest" href="manifest.json">
 
     <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
-    <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
-    <link rel="import" href="bower_components/core-pages/core-pages.html">
     <link rel="import" href="bower_components/font-roboto/roboto.html">
     <link rel="import" href="bower_components/app-router/app-router.html">
     <link rel="import" href="bower_components/core-animated-pages/core-animated-pages.html">
+    <link rel="import" href="elements/manga-list.html">
+    <link rel="import" href="elements/chapter-list.html">
+    <link rel="import" href="elements/chapter-view.html">
     <style>
       html,body {
           font-family: 'RobotoDraft', sans-serif;
@@ -28,25 +29,25 @@
   </head>
   <body fullbleed unresolved>
     <manga-app-data></manga-app-data>
-    <app-router core-animated-pages mode="hash">
+    <app-router mode="hash">
       <app-route path="/search/:searchFilter"
-                 import="elements/manga-list.html">
+                 element="manga-list">
       </app-route>
       
       <app-route path="/manga/:mangaId/:chapterId"
-                 import="elements/chapter-view.html">
+                 element="chapter-view">
       </app-route>
 
       <app-route path="/manga/:mangaId/:chapterId/:page"
-                 import="elements/chapter-view.html">
+                 element="chapter-view">
       </app-route>
       
       <app-route path="/manga/:mangaId"
-                 import="elements/chapter-list.html">
+                 element="chapter-list">
       </app-route>
       
       <app-route path="*"
-                 import="elements/manga-list.html">
+                 element="manga-list">
       </app-route>
     </app-router>
   </body>

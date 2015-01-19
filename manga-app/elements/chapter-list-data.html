@@ -2,11 +2,13 @@
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
 <link rel="import" href="gdrive-data.html">
+<script type="text/javascript" src="utils.js"></script>
 
-<polymer-element name="chapter-list-data" attributes="mangaId starred latestReadDate chaptersRead">
+<polymer-element name="chapter-list-data" attributes="mangaId starred latestReadDate chaptersRead lastReadIndex">
   <template>
     <gdrive-data
        id="driveData"
+       history="{{history}}"
        modelReady="{{driveModelReady}}"></gdrive-data>
     <core-ajax 
        id="ajax"
@@ -27,6 +29,7 @@
         Polymer({
             loading: !initialized_,
             latestReadDate: (new Date()).getTime() / 1000.0,
+            latestReadIndex: -1,
             ready: function() {
                 this.updateStarred_();
                 this.updateReadDate_();
@@ -53,7 +56,7 @@
             convertToExpectedModel: function (model) {
                 return {
                     id: model[3],
-                    title: model[2],
+                    title: model[2] ? convertHTMLEntitiesToString(model[2]) : "Chapter " + model[0],
                     number: model[0],
                     date: model[1]
                 };
@@ -64,6 +67,7 @@
                 initialized_ = true;
                 this.updateStarred_();
                 this.updateReadDate_();
+                this.updateLastReadIndex_();
                 this.chapterListLoaded_();
             },
             chapterListLoaded_: function() {
@@ -95,6 +99,29 @@
                 this.updateStarred_();
                 this.starred = !this.starred;
                 this.$.driveData.setMangaStarred(this.mangaId, this.starred);
+            },
+            historyChanged: function() {
+                this.updateLastReadIndex_();
+            },
+            updateLastReadIndex_: function () {
+                this.lastReadIndex = -1;
+
+                if (!chapterList_ || !this.history) {
+                    return;
+                }
+
+                var chapterIndexMap = new Map();
+                for (var i = 0; i < chapterList_.length; i++) {
+                    chapterIndexMap.set(chapterList_[i].id, i);
+                }
+
+                for (var i = this.history.length-1; i >= 0; i--) {
+                    var info = this.history[i];
+                    if (chapterIndexMap.has(info.chapter)) {
+                        this.lastReadIndex = chapterIndexMap.get(info.chapter);
+                        return;
+                    }
+                }
             },
         });
     })();

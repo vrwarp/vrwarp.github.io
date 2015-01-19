@@ -46,3 +46,12 @@ function getJsonUrl(url, requestCreatedCallback) {
         }
     });
 }
+
+var convertHTMLEntitiesToString = (function() {
+    var temp = document.createElement('p');
+    return function (text) {
+        temp.innerHTML = text.replace("<", "&lt;").replace(">", "&gt;");
+        return temp.textContent;
+    };
+})();
+
