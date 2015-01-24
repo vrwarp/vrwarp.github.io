@@ -16,6 +16,7 @@
     (function() {
         var initialized_ = false;
         var manga_ = {};
+        var mangaList_ = [];
         var starredManga_ = new Set();
         var latestReadDateMap_ = new Map();
 
@@ -63,7 +64,7 @@
         }
 
         var updateManga_ = function (manga) {
-            manga.forEach(function (model) {
+            for (var model of manga) {
                 if (model.id in manga_) {
                     var original = manga_[model.id];
                     var updated = false;
@@ -79,9 +80,10 @@
                     }
                 } else {
                     manga_[model.id] = model;
+                    mangaList_.push(model);
                     notifyInstances_("new-manga", model);
                 }
-            });
+            }
 
             // Cache the updated value.
             updateCache_();
@@ -93,7 +95,7 @@
                 starredManga_.forEach(function (value) { starredMangaList.push(value); });
                 localforage.setItem(MANGA_STARRED, starredMangaList);
             }
-            localforage.setItem(MANGA_MANGA, manga_);
+            localforage.setItem(MANGA_MANGA_LIST, mangaList_);
             localforage.setItem(CACHE_VERSION, CURRENT_CACHE_VERSION);
         }
 
@@ -160,14 +162,14 @@
         // Begin fetching initial data.
         Promise.all([
             localforage.getItem(CACHE_VERSION),
-            localforage.getItem(MANGA_MANGA),
+            localforage.getItem(MANGA_MANGA_LIST),
             localforage.getItem(MANGA_STARRED)]).then(function(values) {
                 if (values[0] != CURRENT_CACHE_VERSION || !values[1]) {
                     return Promise.reject();
                 }
 
                 console.log("Loaded manga from cache.");
-                manga_ = values[1];
+                updateManga_(values[1]);
 
                 if (values[2] && starredManga_.size == 0) {
                     console.log("Loading starred manga from cache");
@@ -239,12 +241,9 @@
                 return 0;
             },
             getMangaList: function() {
-                var result = [];
-                for (var key in manga_) {
-                    result.push(manga_[key]);
-                }
-                result.sort(this.ascendingTitle.bind(this));
-                return result;
+                var copy = mangaList_.slice();
+                copy.sort(this.ascendingTitle);
+                return copy;
             },
             driveModelReadyChanged: function (oldvalue, newvalue) {
                 this.updateStarred_();

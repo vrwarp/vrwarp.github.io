@@ -43,6 +43,14 @@
                 }
             }
         }
+        var authenticationChanged_ = function() {
+            for (var i = 0; i < instanceKeys_.length; i++) {
+                var key = instanceKeys_[i];
+                if (instanceMap_.has(key)) {
+                    instanceMap_.get(key).authenticatedChanged_();
+                }
+            }
+        }
 
         var LATEST_VERSION = 3;
 
@@ -122,14 +130,7 @@
             }, function(reason) {
                 console.log("Auth failed with " + reason);
                 authenticated_ = false;
-            }).then(function() {
-                for (var i = 0; i < instanceKeys_.length; i++) {
-                    var key = instanceKeys_[i];
-                    if (instanceMap_.has(key)) {
-                        instanceMap_.get(key).authenticatedChanged_();
-                    }
-                }
-            });
+            }).then(authenticationChanged_);
         }
 
         var initializeModel_ = function(model) {
@@ -201,6 +202,25 @@
                 gapi.drive.realtime.EventType.VALUES_REMOVED, updateHistory_, false);
             historyList_.addEventListener(
                 gapi.drive.realtime.EventType.VALUES_SET, updateHistory_, false);
+
+            root.addEventListener(
+                gapi.drive.realtime.EventType.VALUE_CHANGED,
+                function (e) {
+                    if (e.isLocal) {
+                        return;
+                    }
+                    if (e.property == VERSION && newValue != LATEST_VERSION) {
+                        initialized_ = false;
+                        model_ = null;
+                        mangaMap_ = null;
+                        historyList_ = null;
+                        authenticated_ = false;
+                        profileName_ = null;
+                        profileImage_ = null;
+                        updateModelReady_();
+                        authenticationChanged_();
+                    }
+                }, false);
 
             // TODO: watch version for changes.
             initialized_ = true;

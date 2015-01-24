@@ -1,0 +1,34 @@
+<html>
+<body>
+<script>
+    var obj = {
+        array: [],
+        obj: {},
+        map: new Map(),
+        set: new Set(),
+    };
+
+    Object.observe(obj, function(changes) {
+        console.log(changes);
+    });
+
+    Object.observe(obj.map, function(changes) {
+        console.log(changes);
+    });
+
+    Object.observe(obj.set, function(changes) {
+        console.log(changes);
+    });
+
+    Object.observe(obj.obj, function(changes) {
+        console.log(changes);
+    });
+
+    obj.array.push(1);
+    obj.obj.aoeu = "test";
+    obj.map.set("hello", "world");
+    obj.set.add("whaaat");
+    obj.somethingNew = 1;
+</script>
+</body>
+</html>

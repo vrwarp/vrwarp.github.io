@@ -257,7 +257,7 @@
         },
         backClicked: function () {
             this.$.list.data = [];
-            document.querySelector("app-router").go("/manga/" + escape(this.mangaId));
+            document.querySelector("app-router").go("/manga/" + escape(this.mangaId), { replace: true });
             this.fire("back", {});
         },
         dateFromEpoch: function (seconds) {
@@ -321,7 +321,8 @@
         },
         nextChapter: function() {
             document.querySelector("app-router").go(
-                "/manga/" + [this.mangaId, this.nextChapterId].map(escape).join("/"));
+                "/manga/" + [this.mangaId, this.nextChapterId].map(escape).join("/"),
+                { replace: true });
         },
         toggleFullscreen: function() {
             this.fullscreen = !this.fullscreen;
