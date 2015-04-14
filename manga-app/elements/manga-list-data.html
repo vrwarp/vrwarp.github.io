@@ -55,8 +55,7 @@
             return {
                 title: convertHTMLEntitiesToString(model.t),
                 id: model.i,
-                // image: model.im ? "https://cdn.mangaeden.com/mangasimg/" + model.im : undefined,
-                image: model.im ? "http://static.mangaeden.com/mangasimg/" + model.im : undefined,
+                image: model.im ? "https://cdn.mangaeden.com/mangasimg/" + model.im : undefined,
                 latestChapterDate: model.ld,
                 starred: starredManga_.has(model.i),
                 hasUnreadChapters: latestReadDateMap_.has(model.i) &&
