@@ -120,7 +120,7 @@
 
         var refreshManga_ = function() {
             return getJsonUrl(
-                "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/list/0/",
+                getCORSProxifiedUrl("www.mangaeden.com/api/list/0/"),
                 function (req) {
                     req.addEventListener("progress", refreshMangaProgressEvent_, false);
                     req.addEventListener("loadend", refreshMangaLoadEndEvent_, false);
@@ -135,7 +135,7 @@
             starredManga_.forEach(function(mangaId) {
                 updatePropertyOfInstances_("progress", -1);
                 updatePromises.push(getJsonUrl(
-                    "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/manga/" + mangaId + "/").then(function (data) {
+                    getCORSProxifiedUrl("www.mangaeden.com/api/manga/" + mangaId + "/")).then(function (data) {
                         var manga = manga_[mangaId];
                         if (manga.latestChapterDate < data.last_chapter_date) {
                             console.log("Update found for " + manga.title);

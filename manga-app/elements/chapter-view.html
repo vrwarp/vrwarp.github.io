@@ -208,7 +208,7 @@
         },
         chapterIdChanged: function (oldValue, newValue) {
             this.$.list.data = [];
-            this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/chapter/" + newValue + "/";
+            this.$.ajax.url = getCORSProxifiedUrl("www.mangaeden.com/api/chapter/" + newValue + "/");
             this.$.ajax.go();
         },
         ascendingImageData: function (a, b) {

@@ -46,7 +46,7 @@
 
                 if (mangaId_ != this.mangaId) {
                     mangaId_ = null;
-                    this.$.ajax.url = "https://cors-anywhere.herokuapp.com/www.mangaeden.com/api/manga/" + this.mangaId + "/";
+                    this.$.ajax.url = getCORSProxifiedUrl("www.mangaeden.com/api/manga/" + this.mangaId + "/");
                     this.$.ajax.go();
                 } else {
                     this.updateStarred_();

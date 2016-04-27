@@ -1,3 +1,8 @@
+function getCORSProxifiedUrl(url) {
+    // return "https://cors-anywhere.herokuapp.com/" + url;
+    return "https://crossorigin.me/http://" + url;
+}
+
 function getUrl(url, requestCreatedCallback) {
     // Return a new promise.
     return new Promise(function(resolve, reject) {
